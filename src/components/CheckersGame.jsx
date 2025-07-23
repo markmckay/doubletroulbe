@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
-import { setupScene } from '../utils/sceneSetup';
-import { createBoard } from '../utils/boardCreation';
-import { createPieces, updatePiecePositions } from '../utils/pieceCreation';
-import { setupMouseHandlers } from '../utils/mouseHandlers';
+import { OrbitControls } from '@react-three/drei';
 import { initializeGame, makeMove, isValidMove, getValidMoves } from '../utils/gameLogic';
 import { makeAIMove } from '../utils/aiLogic';
+import Board3D from './Board3D';
 import './CheckersGame.css';
 
 const CheckersGame = () => {
@@ -23,72 +20,6 @@ const CheckersGame = () => {
   const [gameMode, setGameMode] = useState('pvp'); // 'pvp' or 'pvc'
   const [difficulty, setDifficulty] = useState('medium');
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Refs for Three.js objects
-  const sceneRef = useRef(null);
-  const rendererRef = useRef(null);
-  const cameraRef = useRef(null);
-  const boardRef = useRef(null);
-  const piecesRef = useRef([]);
-  const canvasRef = useRef(null);
-
-  // Initialize Three.js scene
-  useEffect(() => {
-    console.log('🔧 [CheckersGame] Setting up Three.js scene...');
-    
-    if (canvasRef.current) {
-      const { scene, renderer, camera } = setupScene(canvasRef.current);
-      sceneRef.current = scene;
-      rendererRef.current = renderer;
-      cameraRef.current = camera;
-
-      // Create board
-      console.log('🏁 [CheckersGame] Creating game board...');
-      const board = createBoard();
-      boardRef.current = board;
-      scene.add(board);
-
-      // Create pieces
-      console.log('♟️ [CheckersGame] Creating game pieces...');
-      const pieces = createPieces(gameState.board);
-      piecesRef.current = pieces;
-      pieces.forEach(piece => scene.add(piece));
-
-      // Setup mouse handlers
-      console.log('🖱️ [CheckersGame] Setting up mouse handlers...');
-      setupMouseHandlers(
-        canvasRef.current,
-        camera,
-        scene,
-        handlePieceClick,
-        handleBoardClick
-      );
-
-      // Start render loop
-      const animate = () => {
-        requestAnimationFrame(animate);
-        renderer.render(scene, camera);
-      };
-      animate();
-
-      console.log('✅ [CheckersGame] Scene setup complete!');
-    }
-
-    return () => {
-      console.log('🧹 [CheckersGame] Cleaning up scene...');
-      if (rendererRef.current) {
-        rendererRef.current.dispose();
-      }
-    };
-  }, []);
-
-  // Update pieces when game state changes
-  useEffect(() => {
-    console.log('🔄 [CheckersGame] Updating piece positions...');
-    if (piecesRef.current && sceneRef.current) {
-      updatePiecePositions(piecesRef.current, gameState.board, sceneRef.current);
-    }
-  }, [gameState.board]);
 
   // Handle AI moves
   useEffect(() => {
@@ -165,11 +96,6 @@ const CheckersGame = () => {
     setSelectedPiece(null);
     setValidMoves([]);
     
-    // Update pieces in scene
-    if (piecesRef.current && sceneRef.current) {
-      updatePiecePositions(piecesRef.current, newGameState.board, sceneRef.current);
-    }
-    
     console.log('✅ [CheckersGame] Game reset complete');
   };
 
@@ -236,13 +162,30 @@ const CheckersGame = () => {
         )}
       </div>
 
-      <div className="game-canvas" ref={canvasRef}>
+      <div className="game-canvas">
         <Canvas
           camera={{ position: [0, 8, 8], fov: 60 }}
           style={{ width: '100%', height: '100%' }}
+          shadows
         >
           <ambientLight intensity={0.4} />
-          <directionalLight position={[10, 10, 5]} intensity={1} />
+          <directionalLight 
+            position={[10, 10, 5]} 
+            intensity={1} 
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+          />
+          <directionalLight position={[-5, 5, -5]} intensity={0.3} color="#4a90e2" />
+          
+          <Board3D 
+            gameState={gameState}
+            selectedPiece={selectedPiece}
+            validMoves={validMoves}
+            onPieceClick={handlePieceClick}
+            onBoardClick={handleBoardClick}
+          />
+          
           <OrbitControls 
             enablePan={false}
             minDistance={5}
