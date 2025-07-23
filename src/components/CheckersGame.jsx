@@ -7,6 +7,8 @@ import './CheckersGame.css';
 
 // Simple test cube component to verify Canvas is working
 const TestCube = () => {
+  console.log('🧊 [TestCube] Rendering test cube...');
+  
   return (
     <mesh position={[0, 0, 0]}>
       <boxGeometry args={[1, 1, 1]} />
@@ -63,7 +65,7 @@ const CheckersGame = () => {
       <div className="game-canvas">
         <Canvas
           camera={{ position: [0, 5, 5], fov: 75 }}
-          style={{ width: '100%', height: '100%', background: '#2c3e50' }}
+          style={{ width: '100%', height: '100%' }}
         >
           <ambientLight intensity={0.5} />
           <pointLight position={[10, 10, 10]} />
