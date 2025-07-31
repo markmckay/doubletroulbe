@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import Board3D from "./components/Board3D";
+import Board3D from "./components/Board3D.jsx";
 import UIOverlay from "./components/UIOverlay";
 import CameraControls from "./components/CameraControls";
 import GameLogs from "./components/GameLogs";
