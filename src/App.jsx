@@ -1,17 +1,17 @@
 import React, { useState, useMemo } from "react";
 import Board3D from "./components/Board3D.jsx";
-import UIOverlay from "./components/UIOverlay";
-import CameraControls from "./components/CameraControls";
-import GameLogs from "./components/GameLogs";
-import { initialGameState } from "./game/gameConstants";
+import UIOverlay from "./components/UIOverlay.jsx";
+import CameraControls from "./components/CameraControls.jsx";
+import GameLogs from "./components/GameLogs.jsx";
+import { initialGameState } from "./game/gameConstants.js";
 import {
   createInitialPieces,
   getLegalMoves,
   movePiece,
   getForcedMoves,
   undo,
-} from "./game/gameLogic";
-import "./styles.css";
+} from "./game/gameLogic.js";
+import "./App.css";
 
 // Logging utility
 function addLog(gameState, logEntry) {
@@ -25,16 +25,25 @@ function addLog(gameState, logEntry) {
 }
 
 function App() {
-  const [gameState, setGameState] = useState(() => ({
-    ...initialGameState,
-    pieces: createInitialPieces(),
-  }));
+  console.log("App component rendering...");
+  
+  const [gameState, setGameState] = useState(() => {
+    console.log("Initializing game state...");
+    const pieces = createInitialPieces();
+    console.log("Created pieces:", pieces);
+    return {
+      ...initialGameState,
+      pieces,
+    };
+  });
+  
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
 
   // Log game start
   React.useEffect(() => {
+    console.log("Adding game start log...");
     setGameState(state => addLog(state, {
       type: "game_start",
       initialPieceCounts: { 
@@ -60,6 +69,7 @@ function App() {
 
   // On board square or piece click/tap
   const handleSquareClick = ({ x, z, yLevel }) => {
+    console.log("Square clicked:", { x, z, yLevel });
     if (gameState.winner) return;
     
     // Log click/tap interaction
@@ -186,7 +196,6 @@ function App() {
         restoredToMove: newState.logs.filter(l => l.type === "move").length
       });
     });
-    setGameState((state) => undo(state));
     setSelectedId(null);
     setLegalMoves([]);
   };
@@ -218,6 +227,8 @@ function App() {
     }));
   };
 
+  console.log("Rendering App with pieces:", pieces.length);
+
   return (
     <div className="app-root">
       <Board3D
@@ -238,4 +249,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
