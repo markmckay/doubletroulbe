@@ -1,5 +1,5 @@
 {
-  "name": "3d-checkers-game",
+  "name": "fresh-start",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.160.0"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

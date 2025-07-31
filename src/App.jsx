@@ -1,13 +1,11 @@
 import React from 'react';
-import CheckersGame from './components/CheckersGame';
 import './App.css';
 
 function App() {
-  console.log('🚀 [App] Application starting...');
-  
   return (
     <div className="App">
-      <CheckersGame />
+      <h1>Fresh Start</h1>
+      <p>Ready to build something new!</p>
     </div>
   );
 }
