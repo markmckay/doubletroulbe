@@ -10,8 +10,17 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
   const mountRef = useRef();
 
   useEffect(() => {
+    if (!mountRef.current) return;
+    
+    try {
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
+    
+    if (width === 0 || height === 0) {
+      console.warn("Canvas dimensions are zero, retrying...");
+      return;
+    }
+    
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
 
@@ -23,17 +32,22 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mountRef.current.appendChild(renderer.domElement);
 
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(6, 10, 6);
+    dirLight.castShadow = true;
     scene.add(dirLight);
 
     // OrbitControls (locked/unlocked)
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enabled = cameraUnlocked;
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
 
     // Helper: Render the colored edge (red or blue) only on one side
     function addBoardEdge(group, yLevel, color, side) {
@@ -57,6 +71,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
       });
       const boardMesh = new THREE.Mesh(boardGeo, boardMat);
       boardMesh.position.y = yLevel;
+      boardMesh.receiveShadow = true;
       group.add(boardMesh);
 
       for (let x = 0; x < BOARD_SIZE; x++) {
@@ -66,6 +81,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
             const sqMat = new THREE.MeshStandardMaterial({ color: 0xcccccc });
             const square = new THREE.Mesh(sqGeo, sqMat);
             square.position.set(x - 3.5, yLevel + 0.01, z - 3.5);
+            square.receiveShadow = true;
             // Highlight if part of legal moves
             if (
               legalMoves &&
@@ -115,6 +131,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
       const color = piece.color === "red" ? 0xff4444 : 0x3366ff;
       const mesh = createPieceMesh(piece.type, color, piece.yLevel, piece.isKing);
       mesh.position.set(piece.x - 3.5, piece.yLevel + 0.13, piece.z - 3.5);
+      mesh.castShadow = true;
       if (piece.id === selectedId) {
         mesh.material.emissive = new THREE.Color(0xffe082);
       }
@@ -124,6 +141,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
     // Mouse/tap picking logic
     function handlePointer(event) {
       if (!onSquareClick) return;
+      try {
       const rect = renderer.domElement.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -139,21 +157,37 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
           break;
         }
       }
+      } catch (error) {
+        console.error("Error in handlePointer:", error);
+      }
     }
     renderer.domElement.addEventListener("pointerup", handlePointer);
 
+    let animationId;
     function animate() {
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
       controls.enabled = cameraUnlocked;
+      if (controls.enabled) {
+        controls.update();
+      }
       renderer.render(scene, camera);
     }
     animate();
 
     return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
       renderer.dispose();
-      mountRef.current.removeChild(renderer.domElement);
+      if (mountRef.current && renderer.domElement) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
       renderer.domElement.removeEventListener("pointerup", handlePointer);
     };
+    } catch (error) {
+      console.error("Error in Board3D useEffect:", error);
+      return () => {}; // Return empty cleanup function
+    }
   }, [pieces, cameraUnlocked, legalMoves, selectedId, onSquareClick]);
 
   return <div ref={mountRef} className="three-canvas" />;

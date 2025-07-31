@@ -29,12 +29,20 @@ function App() {
   
   const [gameState, setGameState] = useState(() => {
     console.log("Initializing game state...");
-    const pieces = createInitialPieces();
-    console.log("Created pieces:", pieces);
-    return {
-      ...initialGameState,
-      pieces,
-    };
+    try {
+      const pieces = createInitialPieces();
+      console.log("Created pieces:", pieces);
+      return {
+        ...initialGameState,
+        pieces,
+      };
+    } catch (error) {
+      console.error("Error creating initial pieces:", error);
+      return {
+        ...initialGameState,
+        pieces: [],
+      };
+    }
   });
   
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
@@ -43,15 +51,19 @@ function App() {
 
   // Log game start
   React.useEffect(() => {
-    console.log("Adding game start log...");
-    setGameState(state => addLog(state, {
-      type: "game_start",
-      initialPieceCounts: { 
-        red: state.pieces.filter(p => p.color === "red").length,
-        blue: state.pieces.filter(p => p.color === "blue").length
-      },
-      boardSetup: "double_level_checkers"
-    }));
+    try {
+      console.log("Adding game start log...");
+      setGameState(state => addLog(state, {
+        type: "game_start",
+        initialPieceCounts: { 
+          red: state.pieces.filter(p => p.color === "red").length,
+          blue: state.pieces.filter(p => p.color === "blue").length
+        },
+        boardSetup: "double_level_checkers"
+      }));
+    } catch (error) {
+      console.error("Error adding game start log:", error);
+    }
   }, []);
 
   // Calculate legal moves for selected
@@ -62,13 +74,21 @@ function App() {
 
   // Forced capture check
   const forced = useMemo(
-    () => getForcedMoves(pieces, gameState.currentPlayer),
+    () => {
+      try {
+        return getForcedMoves(pieces, gameState.currentPlayer);
+      } catch (error) {
+        console.error("Error getting forced moves:", error);
+        return [];
+      }
+    },
     [pieces, gameState.currentPlayer]
   );
-  const forceCapturePieceIds = forced.flatMap((f) => f.piece.id);
+  const forceCapturePieceIds = forced.flatMap((f) => f.piece?.id).filter(Boolean);
 
   // On board square or piece click/tap
   const handleSquareClick = ({ x, z, yLevel }) => {
+    try {
     console.log("Square clicked:", { x, z, yLevel });
     if (gameState.winner) return;
     
@@ -134,7 +154,7 @@ function App() {
               yLevel: move.yLevel,
               isKing:
                 selectedPiece.isKing ||
-                (movePiece.shouldKing && movePiece.shouldKing(selectedPiece)),
+                false, // Will be handled in movePiece function
             };
             const furtherCaptures = getLegalMoves(
               tempPiece,
@@ -183,10 +203,14 @@ function App() {
         }));
       }
     }
+    } catch (error) {
+      console.error("Error in handleSquareClick:", error);
+    }
   };
 
   // Undo
   const handleUndo = () => {
+    try {
     setGameState(state => {
       const newState = undo(state);
       return addLog(newState, {
@@ -198,10 +222,14 @@ function App() {
     });
     setSelectedId(null);
     setLegalMoves([]);
+    } catch (error) {
+      console.error("Error in handleUndo:", error);
+    }
   };
 
   // Camera presets (stub)
   const handleCameraPreset = (view) => {
+    try {
     setGameState((state) => ({
       ...state,
       logs: [
@@ -214,10 +242,14 @@ function App() {
         },
       ],
     }));
+    } catch (error) {
+      console.error("Error in handleCameraPreset:", error);
+    }
   };
   
   // Camera toggle
   const handleCameraToggle = () => {
+    try {
     const newUnlocked = !cameraUnlocked;
     setCameraUnlocked(newUnlocked);
     setGameState(state => addLog(state, {
@@ -225,9 +257,21 @@ function App() {
       action: "camera_toggle",
       cameraUnlocked: newUnlocked
     }));
+    } catch (error) {
+      console.error("Error in handleCameraToggle:", error);
+    }
   };
 
   console.log("Rendering App with pieces:", pieces.length);
+
+  if (!pieces || pieces.length === 0) {
+    return (
+      <div style={{ padding: '20px', color: 'red' }}>
+        <h1>Loading game...</h1>
+        <p>Initializing pieces and board...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app-root">
