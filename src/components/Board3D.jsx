@@ -49,7 +49,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
           camera.position.set(0, 11, 11);
           camera.lookAt(0, 2.5, 0);
       }
-      if (controls && !cameraUnlocked) {
+      if (!cameraUnlocked) {
         controls.update();
       }
     };
@@ -71,7 +71,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
     dirLight.castShadow = true;
     scene.add(dirLight);
 
-    // OrbitControls (locked/unlocked)
+    // OrbitControls (initialize before setCameraPreset function)
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enabled = cameraUnlocked || cameraPreset === "free";
     controls.enableDamping = true;
