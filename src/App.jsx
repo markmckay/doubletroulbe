@@ -48,6 +48,7 @@ function App() {
   const [cameraUnlocked, setCameraUnlocked] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [legalMoves, setLegalMoves] = useState([]);
+  const [cameraPreset, setCameraPreset] = useState("angle");
 
   // Log game start
   React.useEffect(() => {
@@ -228,20 +229,16 @@ function App() {
   };
 
   // Camera presets (stub)
-  const handleCameraPreset = (view) => {
+  const handleCameraPreset = (preset) => {
     try {
-    setGameState((state) => ({
-      ...state,
-      logs: [
-        ...state.logs,
-        {
-          type: "interaction",
-          action: "camera_preset",
-          view,
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    }));
+      console.log("Camera preset changed to:", preset);
+      setCameraPreset(preset);
+      setGameState((state) => addLog(state, {
+        type: "interaction",
+        action: "camera_preset",
+        view: preset,
+        previousView: cameraPreset
+      }));
     } catch (error) {
       console.error("Error in handleCameraPreset:", error);
     }
@@ -281,6 +278,7 @@ function App() {
         legalMoves={legalMoves}
         onSquareClick={handleSquareClick}
         cameraUnlocked={cameraUnlocked}
+        cameraPreset={cameraPreset}
       />
       <UIOverlay
         gameState={gameState}
@@ -288,7 +286,10 @@ function App() {
         onCameraToggle={handleCameraToggle}
         cameraUnlocked={cameraUnlocked}
       />
-      <CameraControls onPreset={handleCameraPreset} />
+      <CameraControls 
+        onPreset={handleCameraPreset} 
+        disabled={gameState.winner !== null}
+      />
       <GameLogs logs={gameState.logs} />
     </div>
   );

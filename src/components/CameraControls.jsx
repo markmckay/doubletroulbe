@@ -1,10 +1,34 @@
-function CameraControls({ onPreset }) {
+function CameraControls({ onPreset, disabled = false }) {
   return (
     <div className="camera-controls">
-      <button onClick={() => onPreset("top")}>Top</button>
-      <button onClick={() => onPreset("left")}>Left</button>
-      <button onClick={() => onPreset("right")}>Right</button>
-      <button onClick={() => onPreset("3d")}>3D</button>
+      <button 
+        onClick={() => onPreset("top")} 
+        disabled={disabled}
+        className="camera-btn"
+      >
+        📷 Top View
+      </button>
+      <button 
+        onClick={() => onPreset("side")} 
+        disabled={disabled}
+        className="camera-btn"
+      >
+        📷 Side View
+      </button>
+      <button 
+        onClick={() => onPreset("angle")} 
+        disabled={disabled}
+        className="camera-btn"
+      >
+        📷 Angle View
+      </button>
+      <button 
+        onClick={() => onPreset("free")} 
+        disabled={disabled}
+        className="camera-btn"
+      >
+        📷 Free Cam
+      </button>
     </div>
   );
 }

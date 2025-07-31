@@ -6,7 +6,7 @@ import { BOARD_SIZE, RED_EDGE, BLUE_EDGE } from "../game/gameConstants";
 
 const EDGE_THICKNESS = 0.3;
 
-function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked }) {
+function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked, cameraPreset = "angle" }) {
   const mountRef = useRef();
 
   useEffect(() => {
@@ -26,8 +26,36 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
 
     // Camera
     const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 1000);
-    camera.position.set(0, 11, 11);
-    camera.lookAt(0, 2.5, 0);
+    
+    // Set camera position based on preset
+    const setCameraPreset = (preset) => {
+      switch (preset) {
+        case "top":
+          camera.position.set(0, 15, 0);
+          camera.lookAt(0, 2.5, 0);
+          break;
+        case "side":
+          camera.position.set(15, 8, 0);
+          camera.lookAt(0, 2.5, 0);
+          break;
+        case "angle":
+          camera.position.set(8, 12, 8);
+          camera.lookAt(0, 2.5, 0);
+          break;
+        case "free":
+          // Keep current position for free camera
+          break;
+        default:
+          camera.position.set(0, 11, 11);
+          camera.lookAt(0, 2.5, 0);
+      }
+      if (controls && !cameraUnlocked) {
+        controls.update();
+      }
+    };
+    
+    // Set initial camera position
+    setCameraPreset(cameraPreset);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -45,9 +73,12 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
 
     // OrbitControls (locked/unlocked)
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enabled = cameraUnlocked;
+    controls.enabled = cameraUnlocked || cameraPreset === "free";
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI * 0.75; // Prevent camera from going under the board
+    controls.minDistance = 5;
+    controls.maxDistance = 25;
 
     // Helper: Render the colored edge (red or blue) only on one side
     function addBoardEdge(group, yLevel, color, side) {
@@ -166,9 +197,13 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
     let animationId;
     function animate() {
       animationId = requestAnimationFrame(animate);
-      controls.enabled = cameraUnlocked;
+      controls.enabled = cameraUnlocked || cameraPreset === "free";
       if (controls.enabled) {
         controls.update();
+      }
+      // Update camera preset if changed
+      if (!controls.enabled) {
+        setCameraPreset(cameraPreset);
       }
       renderer.render(scene, camera);
     }
@@ -188,7 +223,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
       console.error("Error in Board3D useEffect:", error);
       return () => {}; // Return empty cleanup function
     }
-  }, [pieces, cameraUnlocked, legalMoves, selectedId, onSquareClick]);
+  }, [pieces, cameraUnlocked, legalMoves, selectedId, onSquareClick, cameraPreset]);
 
   return <div ref={mountRef} className="three-canvas" />;
 }
