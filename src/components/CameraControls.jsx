@@ -27,7 +27,7 @@ function CameraControls({ onPreset, disabled = false }) {
         disabled={disabled}
         className="camera-btn"
       >
-        📷 Free Cam
+        🎯 Free Cam
       </button>
     </div>
   );

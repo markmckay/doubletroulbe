@@ -43,13 +43,65 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
           camera.lookAt(0, 2.5, 0);
           break;
         case "free":
-          // Keep current position for free camera
+          // Free Cam: Center and frame the entire board with optimal viewing angle
+          const boardCenter = new THREE.Vector3(0, 2.5, 0); // Center point between both board levels
+          const boardSize = BOARD_SIZE;
+          
+          // Calculate optimal distance to frame the board with 15% padding
+          const fov = camera.fov * (Math.PI / 180); // Convert to radians
+          const aspectRatio = camera.aspect;
+          
+          // Account for both board levels (height = 5) and board width/depth
+          const maxDimension = Math.max(boardSize, boardSize, 5); // Include vertical space between boards
+          const paddingFactor = 1.15; // 15% padding
+          const distance = (maxDimension * paddingFactor) / (2 * Math.tan(fov / 2));
+          
+          // Position camera at 50-degree angle from horizontal for optimal side view
+          const angle = 50 * (Math.PI / 180); // 50 degrees in radians
+          const horizontalDistance = distance * Math.cos(angle);
+          const verticalHeight = distance * Math.sin(angle) + boardCenter.y;
+          
+          // Position camera to show board from side-angle perspective
+          const targetPosition = new THREE.Vector3(
+            horizontalDistance * 0.7, // Slightly angled, not pure side view
+            verticalHeight,
+            horizontalDistance * 0.7  // Create 45-degree viewing angle
+          );
+          
+          // Smooth camera transition
+          animateCameraToPosition(camera, targetPosition, boardCenter, 1500); // 1.5 second transition
           break;
         default:
           camera.position.set(0, 11, 11);
           camera.lookAt(0, 2.5, 0);
       }
     };
+    
+    // Smooth camera animation function
+    function animateCameraToPosition(camera, targetPosition, lookAtTarget, duration = 1500) {
+      const startPosition = camera.position.clone();
+      const startTime = Date.now();
+      
+      function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Use easeInOutCubic for smooth animation
+        const easeProgress = progress < 0.5 
+          ? 4 * progress * progress * progress 
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        
+        // Interpolate camera position
+        camera.position.lerpVectors(startPosition, targetPosition, easeProgress);
+        camera.lookAt(lookAtTarget);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      
+      animate();
+    }
     
     // Set initial camera position
     setCameraPreset(cameraPreset);
