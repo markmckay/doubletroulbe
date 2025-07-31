@@ -49,9 +49,6 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
           camera.position.set(0, 11, 11);
           camera.lookAt(0, 2.5, 0);
       }
-      if (!cameraUnlocked) {
-        controls.update();
-      }
     };
     
     // Set initial camera position
@@ -79,6 +76,7 @@ function Board3D({ pieces, selectedId, legalMoves, onSquareClick, cameraUnlocked
     controls.maxPolarAngle = Math.PI * 0.75; // Prevent camera from going under the board
     controls.minDistance = 5;
     controls.maxDistance = 25;
+    controls.update();
 
     // Helper: Render the colored edge (red or blue) only on one side
     function addBoardEdge(group, yLevel, color, side) {
