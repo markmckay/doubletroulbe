@@ -194,14 +194,25 @@ export function movePiece(state, piece, move) {
       isKing: p.isKing || shouldKing({ ...p, x: move.x, z: move.z, yLevel: move.yLevel }),
     };
   });
+  
+  const wasKinged = !piece.isKing && shouldKing({ ...piece, x: move.x, z: move.z, yLevel: move.yLevel });
+  
   const log = {
     type: "move",
     pieceId: piece.id,
+    pieceType: piece.type,
+    pieceColor: piece.color,
     from: { x: piece.x, z: piece.z, yLevel: piece.yLevel },
     to: { x: move.x, z: move.z, yLevel: move.yLevel },
     captured: move.captured ? move.captured.id : null,
+    capturedType: move.captured ? move.captured.type : null,
+    capturedColor: move.captured ? move.captured.color : null,
+    wasKinged,
+    isTriangleLevelJump: move.triangleLevelJump || false,
+    moveNumber: state.logs.filter(l => l.type === "move").length + 1,
     timestamp: new Date().toISOString(),
   };
+  
   let winner = null;
   const reds = pieces.filter((p) => p.color === "red");
   const blues = pieces.filter((p) => p.color === "blue");
@@ -213,10 +224,37 @@ export function movePiece(state, piece, move) {
   ) {
     winner = state.currentPlayer === "red" ? "blue" : "red";
   }
+  
+  const newLogs = [...state.logs, log];
+  
+  // Add additional logs for special events
+  if (wasKinged) {
+    newLogs.push({
+      type: "king",
+      pieceId: piece.id,
+      pieceType: piece.type,
+      pieceColor: piece.color,
+      position: { x: move.x, z: move.z, yLevel: move.yLevel },
+      moveNumber: state.logs.filter(l => l.type === "move").length + 1,
+      timestamp: new Date().toISOString(),
+    });
+  }
+  
+  if (winner) {
+    newLogs.push({
+      type: "game_end",
+      winner,
+      reason: reds.length === 0 ? "no_red_pieces" : blues.length === 0 ? "no_blue_pieces" : "no_legal_moves",
+      finalPieceCounts: { red: reds.length, blue: blues.length },
+      totalMoves: state.logs.filter(l => l.type === "move").length + 1,
+      timestamp: new Date().toISOString(),
+    });
+  }
+  
   return {
     ...state,
     pieces,
-    logs: [...state.logs, log],
+    logs: newLogs,
     undoStack: [
       ...state.undoStack,
       {
