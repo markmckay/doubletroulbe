@@ -86,131 +86,174 @@
   border-color: #ddd;
 }
 
-.game-logs {
+/* Game Log Component */
+.game-log-container {
   position: fixed;
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(8px);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  border: 1px solid rgba(0,0,0,0.1);
-  font-size: 0.95em;
-  min-width: 300px;
-  max-width: 400px;
+  bottom: 20px;
+  left: 20px;
   z-index: 10;
-  transition: box-shadow 0.2s ease, transform 0.1s ease;
-  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.game-logs.dragging {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-  transform: rotate(1deg);
-  z-index: 1000;
-}
-
-.game-logs-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.95);
-  border-radius: 8px 8px 0 0;
-  border-bottom: 1px solid rgba(0,0,0,0.1);
-  cursor: grab;
-  min-height: 36px;
-}
-
-.game-logs-header:active {
-  cursor: grabbing;
-}
-
-.game-logs-header:focus {
-  outline: 2px solid #4a90e2;
-  outline-offset: -2px;
-}
-
-.drag-handle {
+/* Collapsed State - Button */
+.game-log-button {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
-}
-
-.drag-icon {
-  color: #999;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
   font-size: 14px;
-  line-height: 1;
-  transform: rotate(90deg);
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  user-select: none;
+  min-width: 120px;
 }
 
-.log-title {
+.game-log-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.game-log-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.game-log-button:focus {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+.game-log-button .log-icon {
+  font-size: 16px;
+}
+
+.game-log-button .log-count {
+  background: #4a90e2;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 12px;
   font-weight: bold;
-  font-size: 0.9em;
-  color: #333;
+  min-width: 20px;
+  text-align: center;
 }
 
-.collapse-toggle {
+/* Expanded State */
+.game-log-expanded {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  max-height: 60vh;
+  animation: expandLog 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes expandLog {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.game-log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px 12px 0 0;
+}
+
+.game-log-header .log-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.game-log-header .log-icon {
+  font-size: 16px;
+}
+
+.close-button {
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   color: #666;
-  font-size: 12px;
+  font-size: 16px;
   transition: all 0.2s ease;
-  min-width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
 }
 
-.collapse-toggle:hover {
-  background: rgba(0,0,0,0.1);
+.close-button:hover {
+  background: rgba(0, 0, 0, 0.1);
   color: #333;
 }
 
-.collapse-toggle:focus {
+.close-button:focus {
   outline: 2px solid #4a90e2;
   outline-offset: 1px;
 }
 
-.game-logs.collapsed {
-  max-height: 44px;
-  overflow: hidden;
-}
-
-.game-logs.collapsed .game-logs-header {
-  border-radius: 8px;
-  border-bottom: none;
-}
-
-.game-logs-content {
-  max-height: 200px;
+.game-log-content {
+  max-height: calc(60vh - 60px);
   overflow-y: auto;
-  padding: 8px 15px;
-  background: rgba(255,255,255,0.98);
-  border-radius: 0 0 8px 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 0 0 12px 12px;
 }
 
-.game-logs-content::-webkit-scrollbar {
+.game-log-content::-webkit-scrollbar {
   width: 6px;
 }
 
-.game-logs-content::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05);
+.game-log-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 3px;
 }
 
-.game-logs-content::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
+.game-log-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
 
-.game-logs-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.3);
+.game-log-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
-.game-logs ul {
+.no-logs {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.game-log-content ul {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -220,52 +263,63 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 2px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .log-entry:last-child {
   border-bottom: none;
 }
 
-.log-text {
+.log-entry .log-text {
   flex: 1;
-  line-height: 1.3;
-}
-
-.log-time {
-  color: #aaa;
-  font-size: 0.8em;
-  white-space: nowrap;
-  margin-top: 1px;
-}
-
-.log-entry.log-game_end .log-text {
-  color: #ff4444;
-  font-weight: bold;
-}
-
-.log-entry.log-king .log-text {
-  color: #ffd700;
-}
-
-.log-entry.log-move .log-text {
   color: #333;
 }
 
+.log-entry .log-time {
+  color: #999;
+  font-size: 11px;
+  white-space: nowrap;
+  margin-top: 1px;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+/* Log Entry Type Styling */
+.log-entry.log-game_end .log-text {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.log-entry.log-king .log-text {
+  color: #f39c12;
+  font-weight: 500;
+}
+
+.log-entry.log-move .log-text {
+  color: #2c3e50;
+}
+
 .log-entry.log-interaction .log-text {
-  color: #666;
+  color: #7f8c8d;
+}
+
+.log-entry.log-game_start .log-text {
+  color: #27ae60;
+  font-weight: 500;
 }
 
 .log-overflow-indicator {
-  font-size: 0.8em;
+  font-size: 12px;
   color: #999;
-  margin-top: 8px;
+  margin-top: 12px;
   text-align: center;
-  padding: 4px;
-  background: rgba(0,0,0,0.02);
-  border-radius: 4px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 6px;
+  font-style: italic;
 }
 
 @media (max-width: 800px) {
@@ -276,14 +330,30 @@
     padding: 10px 7px;
   }
   
-  .game-logs {
-    min-width: 280px;
-    max-width: calc(100vw - 20px);
-    font-size: 0.9em;
+  .game-log-container {
+    bottom: 10px;
+    left: 10px;
   }
   
-  .game-logs-content {
-    max-height: 150px;
+  .game-log-button {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-width: 100px;
+  }
+  
+  .game-log-expanded {
+    width: calc(100vw - 20px);
+    max-height: 50vh;
+  }
+  
+  .game-log-content {
+    max-height: calc(50vh - 60px);
+    padding: 10px 12px;
+  }
+  
+  .log-entry {
+    font-size: 12px;
+    padding: 4px 0;
   }
   
   .camera-controls {
